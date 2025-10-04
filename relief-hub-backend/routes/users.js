@@ -1,15 +1,15 @@
 const express = require('express');
 const User = require('../models/User');
-const auth = require('../middleware/auth');
+const { protect } = require('../middleware/auth');  // ✅ destructure protect
 const router = express.Router();
 
 // Get profile
-router.get('/me', auth, async (req, res) => {
+router.get('/me', protect, async (req, res) => {
   res.json(req.user);
 });
 
 // Update profile
-router.put('/me', auth, async (req, res) => {
+router.put('/me', protect, async (req, res) => {
   try {
     const { name } = req.body;
     req.user.name = name || req.user.name;
