@@ -1,5 +1,5 @@
 // src/pages/Leaderboard.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { leaderboardAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Award, Download, Users, Building, Building2, Landmark } from 'lucide-react';
