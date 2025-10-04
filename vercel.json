@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "relief-hub-frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "relief-hub-frontend/build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/relief-hub-frontend/build/index.html"
+    }
+  ]
+}
