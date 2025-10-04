@@ -12,13 +12,13 @@ const Leaderboard = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  useEffect(() => {
-    loadLeaderboard();
-    loadBadges();
-    if (user) {
-      loadMyRank();
-    }
-  }, [filterType, user]);
+useEffect(() => {
+  loadLeaderboard();
+  loadBadges();
+  if (user) {
+    loadMyRank();
+  }
+}, [filterType, user, loadLeaderboard]);
 
   const loadLeaderboard = useCallback(async () => {
   try {

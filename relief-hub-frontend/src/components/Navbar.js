@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   Heart, MapPin, Award, User, LogOut, Menu, X, 
-  LayoutDashboard, Settings, Bell 
+  LayoutDashboard 
 } from 'lucide-react';
 
 const Navbar = () => {

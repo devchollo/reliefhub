@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 
 const RequestDetailsModal = ({ request, onClose, onHelp }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [helping, setHelping] = useState(false);
   const [notes, setNotes] = useState('');
 

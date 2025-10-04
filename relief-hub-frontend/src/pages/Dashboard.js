@@ -1,9 +1,9 @@
 // src/pages/Dashboard.js
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { userAPI, requestAPI, donationAPI } from '../services/api';
+import { userAPI, } from '../services/api';
 import { 
-  Heart, Package, TrendingUp, Award, MapPin, 
+  Heart, Package, Award, MapPin, 
   Clock, CheckCircle, DollarSign, Users, AlertCircle 
 } from 'lucide-react';
 

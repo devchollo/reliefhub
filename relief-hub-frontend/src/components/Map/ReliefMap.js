@@ -57,28 +57,29 @@ const ReliefMap = ({ onRequestSelect }) => {
     status: 'pending'
   });
   const [mapCenter, setMapCenter] = useState([10.3157, 123.8854]); // Philippines default
-  const [selectedRequest, setSelectedRequest] = useState(null);
+  const setSelectedRequest = useState(null);
 
   // Fetch requests
   useEffect(() => {
     fetchRequests();
   }, [filters]);
 
-  const fetchRequests = async () => {
-    try {
-      setLoading(true);
-      const params = {};
-      if (filters.type !== 'all') params.type = filters.type;
-      if (filters.status) params.status = filters.status;
-
-      const response = await axios.get('/api/requests', { params });
-      setRequests(response.data.data || []);
-    } catch (error) {
-      console.error('Error fetching requests:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchRequests = useCallback(async () => {
+  try {
+    setLoading(true);
+    const response = await requestAPI.getAll({
+      status: 'pending',
+      lat: center.lat,
+      lng: center.lng,
+      radius: 50
+    });
+    setRequests(response.data);
+  } catch (error) {
+    console.error('Failed to fetch requests:', error);
+  } finally {
+    setLoading(false);
+  }
+}, [center.lat, center.lng]);
 
   // Get user's current location
   const getUserLocation = () => {
@@ -94,9 +95,9 @@ const ReliefMap = ({ onRequestSelect }) => {
     }
   };
 
-  useEffect(() => {
-    getUserLocation();
-  }, []);
+useEffect(() => {
+  fetchRequests();
+}, [fetchRequests]);
 
   const handleMarkerClick = (request) => {
     setSelectedRequest(request);

@@ -11,12 +11,12 @@ const VerifyEmail = () => {
   const navigate = useNavigate();
   const token = searchParams.get('token');
 
-  useEffect(() => {
-    // If there's a token in URL, verify automatically
-    if (token) {
-      handleVerify();
-    }
-  }, [token]);
+ useEffect(() => {
+  // If there's a token in URL, verify automatically
+  if (token) {
+    handleVerify();
+  }
+}, [token, handleVerify]);
 
   const handleVerify = useCallback(async () => {
   if (!token) {
