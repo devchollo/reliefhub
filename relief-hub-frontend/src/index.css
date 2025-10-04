@@ -1,0 +1,18 @@
+@import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fix for Leaflet marker icons */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+/* Prevent body scroll */
+html, body, #root {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
