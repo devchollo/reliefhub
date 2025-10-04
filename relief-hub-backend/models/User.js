@@ -1,4 +1,6 @@
-// Add these missing fields to your UserSchema
+const mongoose = require('mongoose');
+
+
 const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -23,3 +25,6 @@ const UserSchema = new mongoose.Schema({
     type: { type: String }
   }]
 }, { timestamps: true });
+
+
+module.exports = mongoose.model('User', UserSchema); 
