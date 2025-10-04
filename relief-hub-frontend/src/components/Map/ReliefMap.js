@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import axios from 'axios';
+import { requestAPI } from '../../services/api';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default marker icons
@@ -57,29 +57,29 @@ const ReliefMap = ({ onRequestSelect }) => {
     status: 'pending'
   });
   const [mapCenter, setMapCenter] = useState([10.3157, 123.8854]); // Philippines default
-  const setSelectedRequest = useState(null);
 
   // Fetch requests
+  const fetchRequests = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await requestAPI.getAll({
+        status: filters.status || 'pending',
+        type: filters.type !== 'all' ? filters.type : undefined,
+        lat: mapCenter[0],
+        lng: mapCenter[1],
+        radius: 50
+      });
+      setRequests(response.data);
+    } catch (error) {
+      console.error('Failed to fetch requests:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [mapCenter, filters.status, filters.type]);
+
   useEffect(() => {
     fetchRequests();
-  }, [filters]);
-
- const fetchRequests = useCallback(async () => {
-  try {
-    setLoading(true);
-    const response = await requestAPI.getAll({
-      status: 'pending',
-      lat: center.lat,
-      lng: center.lng,
-      radius: 50
-    });
-    setRequests(response.data);
-  } catch (error) {
-    console.error('Failed to fetch requests:', error);
-  } finally {
-    setLoading(false);
-  }
-}, [center.lat, center.lng]);
+  }, [fetchRequests]);
 
   // Get user's current location
   const getUserLocation = () => {
@@ -95,12 +95,7 @@ const ReliefMap = ({ onRequestSelect }) => {
     }
   };
 
-useEffect(() => {
-  fetchRequests();
-}, [fetchRequests]);
-
   const handleMarkerClick = (request) => {
-    setSelectedRequest(request);
     if (onRequestSelect) {
       onRequestSelect(request);
     }
