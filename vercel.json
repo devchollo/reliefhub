@@ -1,18 +1,12 @@
 {
   "version": 2,
-  "builds": [
+  "buildCommand": "cd relief-hub-frontend && npm install && npm run build",
+  "outputDirectory": "relief-hub-frontend/build",
+  "installCommand": "cd relief-hub-frontend && npm install",
+  "rewrites": [
     {
-      "src": "relief-hub-frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "relief-hub-frontend/build"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/relief-hub-frontend/build/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
