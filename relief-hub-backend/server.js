@@ -45,15 +45,17 @@ const corsOptions = {
     const allowedOrigins = [
       process.env.FRONTEND_URL,
       'http://localhost:3000',
-      'http://localhost:3001'
-    ].filter(Boolean);
+      'http://localhost:3001',
+      'https://your-vercel-app.vercel.app' // Add your deployed frontend URL
+    ].filter(url => url); // Remove undefined
     
-    // Allow requests with no origin (mobile apps, curl, postman)
+    // Allow requests with no origin
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log('Blocked by CORS:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },

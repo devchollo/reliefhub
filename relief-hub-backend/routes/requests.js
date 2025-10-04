@@ -5,11 +5,25 @@ const Request = require('../models/Request');
 const User = require('../models/User');
 const { protect, authorize } = require('../middleware/auth');
 
+// Optional auth middleware - allows both authenticated and public access
+const optionalAuth = async (req, res, next) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  if (token) {
+    try {
+      const jwt = require('jsonwebtoken');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await User.findById(decoded.id).select('-password');
+    } catch (err) {
+      // Token invalid but continue anyway (public access)
+    }
+  }
+  next();
+};
 
 // @desc    Create new relief request
 // @route   POST /api/requests
-// @access  Public
-router.post('/', async (req, res, next) => {
+// @access  Public (but can attach user if authenticated)
+router.post('/', optionalAuth, async (req, res, next) => {
   try {
     const { name, phone, email, type, message, lat, lng, address, gcashNumber, bankAccount, donationGoal } = req.body;
 
@@ -30,13 +44,13 @@ router.post('/', async (req, res, next) => {
       message,
       location: {
         type: 'Point',
-        coordinates: [lng, lat] // MongoDB expects [longitude, latitude]
+        coordinates: [parseFloat(lng), parseFloat(lat)] // Ensure numbers
       },
       address,
       gcashNumber: type === 'money' ? gcashNumber : undefined,
       bankAccount: type === 'money' ? bankAccount : undefined,
       donationGoal: type === 'money' ? donationGoal : undefined,
-      user: req.user ? req.user.id : undefined
+      user: req.user ? req.user.id : undefined // Attach user if authenticated
     });
 
     res.status(201).json({
