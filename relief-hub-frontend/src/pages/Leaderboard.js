@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { leaderboardAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Award, TrendingUp, Download, Users, Building, Building2, Landmark } from 'lucide-react';
+import { Award, Download, Users, Building, Building2, Landmark } from 'lucide-react';
 
 const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -20,17 +20,17 @@ const Leaderboard = () => {
     }
   }, [filterType, user]);
 
-  const loadLeaderboard = async () => {
-    try {
-      setLoading(true);
-      const response = await leaderboardAPI.get(filterType);
-      setLeaderboard(response.data);
-    } catch (error) {
-      console.error('Failed to load leaderboard:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loadLeaderboard = useCallback(async () => {
+  try {
+    setLoading(true);
+    const response = await leaderboardAPI.get(filterType);
+    setLeaderboard(response.data);
+  } catch (error) {
+    console.error('Failed to load leaderboard:', error);
+  } finally {
+    setLoading(false);
+  }
+}, [filterType]);
 
   const loadMyRank = async () => {
     try {

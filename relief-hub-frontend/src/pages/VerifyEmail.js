@@ -18,25 +18,25 @@ const VerifyEmail = () => {
     }
   }, [token]);
 
-  const handleVerify = async () => {
-    if (!token) {
-      setError('No verification token found');
-      return;
-    }
+  const handleVerify = useCallback(async () => {
+  if (!token) {
+    setError('No verification token found');
+    return;
+  }
 
-    setVerifying(true);
-    const result = await verifyEmail(token);
-    
-    if (result.success) {
-      setMessage('Email verified successfully! Redirecting...');
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
-    } else {
-      setError(result.error);
-    }
-    setVerifying(false);
-  };
+  setVerifying(true);
+  const result = await verifyEmail(token);
+  
+  if (result.success) {
+    setMessage('Email verified successfully! Redirecting...');
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 2000);
+  } else {
+    setError(result.error);
+  }
+  setVerifying(false);
+}, [token, verifyEmail, navigate]);
 
   const handleContinue = () => {
     navigate('/dashboard');

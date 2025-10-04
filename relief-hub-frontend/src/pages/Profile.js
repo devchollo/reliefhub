@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
-import { User, Mail, Phone, Lock, Save, AlertCircle, CheckCircle } from 'lucide-react';
+import { Mail, Phone, Save, AlertCircle, CheckCircle } from 'lucide-react';
 
 const Profile = () => {
   const { user, updateUser, changePassword } = useAuth();

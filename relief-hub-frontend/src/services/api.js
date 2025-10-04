@@ -287,7 +287,7 @@ export const handleAPIError = (error) => {
 };
 
 // Export all APIs
-export default {
+const apiService = {
   request: requestAPI,
   donation: donationAPI,
   user: userAPI,
@@ -297,3 +297,5 @@ export default {
   maps: mapsAPI,
   handleError: handleAPIError
 };
+
+export default apiService;
