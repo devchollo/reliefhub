@@ -12,14 +12,6 @@ const Leaderboard = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-useEffect(() => {
-  loadLeaderboard();
-  loadBadges();
-  if (user) {
-    loadMyRank();
-  }
-}, [filterType, user, loadLeaderboard]);
-
   const loadLeaderboard = useCallback(async () => {
   try {
     setLoading(true);
@@ -49,6 +41,14 @@ useEffect(() => {
       console.error('Failed to load badges:', error);
     }
   };
+
+  useEffect(() => {
+  loadLeaderboard();
+  loadBadges();
+  if (user) {
+    loadMyRank();
+  }
+}, [filterType, user, loadLeaderboard]);
 
   const downloadCertificate = async (badgeId) => {
     try {
