@@ -83,4 +83,21 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.get('/test-email', async (req, res) => {
+  const { sendEmail } = require('../utils/email');
+  
+  try {
+    await sendEmail({
+      to: 'devchollo@gmail.com', // Change this
+      subject: 'Test Email from ReliefHub',
+      html: '<h1>Success! ✅</h1><p>Brevo is working correctly.</p>',
+      text: 'Success! Brevo is working correctly.'
+    });
+    
+    res.json({ success: true, message: 'Test email sent! Check your inbox.' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 module.exports = router;
