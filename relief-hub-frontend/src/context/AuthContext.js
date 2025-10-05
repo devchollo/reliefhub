@@ -20,28 +20,38 @@ export const AuthProvider = ({ children }) => {
 
   // Load user from localStorage on mount
   useEffect(() => {
-    const loadUser = async () => {
-      const token = localStorage.getItem('token');
-      const savedUser = localStorage.getItem('user');
-      
-      if (token && savedUser) {
-        try {
-          setUser(JSON.parse(savedUser));
-          // Optionally verify token with backend
-          const response = await axios.get('/users/me');
-          setUser(response.data.data);
-          localStorage.setItem('user', JSON.stringify(response.data.data));
-        } catch (err) {
-          console.error('Token verification failed:', err);
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          setUser(null);
-        }
+     const loadUser = async () => {
+    const token = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+    
+    if (token) {
+      let parsedUser = null;
+      try {
+        parsedUser = savedUser ? JSON.parse(savedUser) : null;
+      } catch (err) {
+        console.warn('Saved user corrupted, clearing...', err);
+        localStorage.removeItem('user');
       }
-      setLoading(false);
-    };
 
-    loadUser();
+      setUser(parsedUser);
+
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setUser(response.data.data);
+        localStorage.setItem('user', JSON.stringify(response.data.data));
+      } catch (err) {
+        console.error('Token verification failed:', err);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+      }
+    }
+    setLoading(false);
+  };
+
+  loadUser();
   }, []);
 
   // Register
