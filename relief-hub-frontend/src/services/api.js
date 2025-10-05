@@ -132,33 +132,30 @@ export const userAPI = {
 
 // Leaderboard API
 export const leaderboardAPI = {
-  // Get leaderboard
   get: async (type = 'all') => {
     const params = type !== 'all' ? `?type=${type}` : '';
     const response = await axios.get(`${API_URL}/leaderboard${params}`);
     return response.data;
   },
 
-  // Get my rank
   getMyRank: async () => {
     const response = await axios.get(`${API_URL}/leaderboard/my-rank`);
     return response.data;
   },
 
-  // Get badge requirements
   getBadges: async () => {
     const response = await axios.get(`${API_URL}/leaderboard/badges`);
     return response.data;
   },
 
-  // Download certificate
   downloadCertificate: async (badgeId) => {
-    const response = await axios.get(`${API_URL}/leaderboard/certificate/${badgeId}`, {
+    const response = await axios.get(`${API_URL}/leaderboard/badges/${badgeId}/certificate`, {
       responseType: 'blob'
     });
     return response.data;
   }
 };
+
 
 // Admin API (requires admin authentication)
 export const adminAPI = {

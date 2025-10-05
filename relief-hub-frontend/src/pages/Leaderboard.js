@@ -16,13 +16,15 @@ const Leaderboard = () => {
   try {
     setLoading(true);
     const response = await leaderboardAPI.get(filterType);
-    setLeaderboard(response.data);
+    setLeaderboard(Array.isArray(response) ? response : []);
   } catch (error) {
     console.error('Failed to load leaderboard:', error);
+    setLeaderboard([]); // fallback
   } finally {
     setLoading(false);
   }
 }, [filterType]);
+
 
   const loadMyRank = async () => {
     try {
@@ -34,13 +36,15 @@ const Leaderboard = () => {
   };
 
   const loadBadges = async () => {
-    try {
-      const response = await leaderboardAPI.getBadges();
-      setBadges(response.data);
-    } catch (error) {
-      console.error('Failed to load badges:', error);
-    }
-  };
+  try {
+    const response = await leaderboardAPI.getBadges();
+    setBadges(Array.isArray(response) ? response : []);
+  } catch (err) {
+    console.error('Failed to load badges:', err);
+    setBadges([]);
+  }
+};
+
 
   useEffect(() => {
   loadLeaderboard();
@@ -147,7 +151,7 @@ const Leaderboard = () => {
         {/* Leaderboard */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
           <div className="divide-y divide-gray-200">
-            {leaderboard.map((donor, index) => (
+            {Array.isArray(leaderboard) && leaderboard.map((donor, index) => (
               <div
                 key={donor.id}
                 className={`p-6 hover:bg-gray-50 transition-colors ${
@@ -231,7 +235,7 @@ const Leaderboard = () => {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {badges.map((badge, index) => (
+            {Array.isArray(badges) && badges.map((badge, index) => (
               <div key={index} className="text-center p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl hover:shadow-lg transition-shadow">
                 <div className="text-5xl mb-3">{badge.icon}</div>
                 <h3 className="font-bold text-lg text-gray-900 mb-2">{badge.name}</h3>

@@ -10,6 +10,18 @@ export const useAuth = () => {
   return context;
 };
 
+// Utility to safely parse JSON from localStorage
+const safeParse = (str) => {
+  if (!str || str === 'undefined' || str === 'null') return null;
+  try {
+    return JSON.parse(str);
+  } catch (err) {
+    console.warn('Saved user corrupted, clearing...', err);
+    localStorage.removeItem('user');
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,22 +35,17 @@ export const AuthProvider = ({ children }) => {
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
+  // Helper to safely update user state and localStorage
+  const updateLocalUser = (data) => {
+    setUser(data);
+    localStorage.setItem('user', JSON.stringify(data));
+  };
+
   // Load user from localStorage and verify token
   useEffect(() => {
     const loadUser = async () => {
       const token = localStorage.getItem('token');
-      const savedUser = localStorage.getItem('user');
-      let parsedUser = null;
-
-      if (savedUser) {
-        try {
-          parsedUser = JSON.parse(savedUser);
-        } catch (err) {
-          console.warn('Saved user corrupted, clearing...', err);
-          localStorage.removeItem('user');
-        }
-      }
-
+      const parsedUser = safeParse(localStorage.getItem('user'));
       setUser(parsedUser);
 
       if (token) {
@@ -46,8 +53,7 @@ export const AuthProvider = ({ children }) => {
           const response = await axios.get(`${API_URL}/users/me`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-          setUser(response.data.data);
-          localStorage.setItem('user', JSON.stringify(response.data.data));
+          updateLocalUser(response.data.data);
         } catch (err) {
           console.error('Token verification failed:', err);
           localStorage.removeItem('token');
@@ -72,16 +78,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Auth actions
+  // ---------------- Auth Actions ---------------- //
+
   const register = async (userData) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post(`${API_URL}/auth/register`, userData);
-      const { token, user } = response.data;
+      const { data } = await axios.post(`${API_URL}/auth/register`, userData);
+      const { token, user } = data;
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      setUser(user);
+      updateLocalUser(user);
       return { success: true, user };
     } catch (err) {
       const msg = err.response?.data?.message || 'Registration failed';
@@ -96,11 +102,10 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
-      const { token, user } = response.data;
+      const { data } = await axios.post(`${API_URL}/auth/login`, { email, password });
+      const { token, user } = data;
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      setUser(user);
+      updateLocalUser(user);
       return { success: true, user };
     } catch (err) {
       const msg = err.response?.data?.message || 'Login failed';
@@ -122,8 +127,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const data = await protectedRequest('put', '/users/me', { updates });
-      setUser(data.data);
-      localStorage.setItem('user', JSON.stringify(data.data));
+      updateLocalUser(data.data);
       return { success: true, user: data.data };
     } catch (err) {
       setError(err.message);
@@ -138,8 +142,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       await protectedRequest('post', '/auth/verify-email', { token });
       const updated = await protectedRequest('get', '/users/me');
-      setUser(updated.data);
-      localStorage.setItem('user', JSON.stringify(updated.data));
+      updateLocalUser(updated.data);
       return { success: true };
     } catch (err) {
       return { success: false, error: err.message };
@@ -153,8 +156,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       await protectedRequest('post', '/auth/verify-phone', { userId: user?.id, code });
       const updated = await protectedRequest('get', '/users/me');
-      setUser(updated.data);
-      localStorage.setItem('user', JSON.stringify(updated.data));
+      updateLocalUser(updated.data);
       return { success: true };
     } catch (err) {
       return { success: false, error: err.message };
@@ -207,6 +209,8 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
+
+  // ---------------- Context Value ---------------- //
 
   const value = {
     user,
