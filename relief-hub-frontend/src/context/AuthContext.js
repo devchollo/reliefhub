@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post('/auth/register', userData);
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/register`, userData);
       
       const { token, user } = response.data;
       
