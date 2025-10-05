@@ -46,7 +46,7 @@ const corsOptions = {
       process.env.FRONTEND_URL,
       'http://localhost:3000',
       'http://localhost:3001',
-      'https://reliefhub.vercel.app/' // Add your deployed frontend URL
+      'https://reliefhub.vercel.app' // Add your deployed frontend URL
     ].filter(url => url); // Remove undefined
     
     // Allow requests with no origin
