@@ -72,7 +72,8 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post('/auth/login', { email, password });
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, { email, password });
+
       
       const { token, user } = response.data;
       
@@ -103,7 +104,7 @@ export const AuthProvider = ({ children }) => {
   const updateUser = async (updates) => {
     try {
       setLoading(true);
-      const response = await axios.put('/users/me', updates);
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/users/me`, {updates});
       const updatedUser = response.data.data;
       
       setUser(updatedUser);
@@ -123,10 +124,10 @@ export const AuthProvider = ({ children }) => {
   const verifyEmail = async (token) => {
     try {
       setLoading(true);
-      await axios.post('/auth/verify-email', { token });
+      await axios.post(`${process.env.REACT_APP_API_URL}/auth/verify-email`, { token });
       
       // Refresh user data
-      const response = await axios.get('/users/me');
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/me`);
       const updatedUser = response.data.data;
       setUser(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -144,10 +145,10 @@ export const AuthProvider = ({ children }) => {
   const verifyPhone = async (code) => {
     try {
       setLoading(true);
-      await axios.post('/auth/verify-phone', { userId: user.id, code });
+      await axios.post(`${process.env.REACT_APP_API_URL}/auth/verify-phone`, { userId: user.id, code });
       
       // Refresh user data
-      const response = await axios.get('/users/me');
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/me`);
       const updatedUser = response.data.data;
       setUser(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -164,7 +165,7 @@ export const AuthProvider = ({ children }) => {
   // Resend phone verification
   const resendPhoneVerification = async () => {
     try {
-      await axios.post('/auth/resend-phone-verification', { userId: user.id });
+      await axios.post(`${process.env.REACT_APP_API_URL}/auth/resend-phone-verification`, { userId: user.id });
       return { success: true };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to resend code';
@@ -176,7 +177,7 @@ export const AuthProvider = ({ children }) => {
   const forgotPassword = async (email) => {
     try {
       setLoading(true);
-      await axios.post('/auth/forgot-password', { email });
+      await axios.post(`${process.env.REACT_APP_API_URL}/auth/forgot-password`, { email });
       return { success: true };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Request failed';
@@ -190,7 +191,7 @@ export const AuthProvider = ({ children }) => {
   const resetPassword = async (token, newPassword) => {
     try {
       setLoading(true);
-      await axios.post('/auth/reset-password', { token, newPassword });
+      await axios.post(`${process.env.REACT_APP_API_URL}/auth/reset-password`, { token, newPassword });
       return { success: true };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Reset failed';
@@ -204,7 +205,7 @@ export const AuthProvider = ({ children }) => {
   const changePassword = async (currentPassword, newPassword) => {
     try {
       setLoading(true);
-      await axios.put('/users/change-password', { currentPassword, newPassword });
+      await axios.put(`${process.env.REACT_APP_API_URL}/users/change-password`, { currentPassword, newPassword });
       return { success: true };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Password change failed';
