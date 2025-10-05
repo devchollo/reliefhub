@@ -1,6 +1,8 @@
 const express = require('express');
 const User = require('../models/User');
-const { protect } = require('../middleware/auth');  // ✅ destructure protect
+const Donation = require('../models/Donation'); 
+const Request = require('../models/Request');   
+const { protect } = require('../middleware/auth');  
 const router = express.Router();
 
 // Get profile
