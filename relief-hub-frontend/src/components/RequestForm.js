@@ -142,7 +142,7 @@ const RequestForm = ({ onClose, onSuccess }) => {
         if (formData.donationGoal) requestData.donationGoal = parseFloat(formData.donationGoal);
       }
 
-      const response = await axios.post('/api/requests', requestData);
+      const response = await axios.post('/requests', requestData);
 
       if (response.data.success) {
         alert('Request submitted successfully! Help is on the way.');
