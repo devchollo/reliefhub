@@ -411,7 +411,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { userAPI } from '../services/api';
 import { 
-  Heart, Package, Award, MapPin, Clock, CheckCircle, DollarSign, Users, AlertCircle 
+  Heart, Package, Award, MapPin, CheckCircle, DollarSign, Users, AlertCircle 
 } from 'lucide-react';
 
 const Dashboard = () => {
