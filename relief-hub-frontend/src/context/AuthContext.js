@@ -6,9 +6,7 @@ const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
 
@@ -16,210 +14,195 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
 
-  // Load user from localStorage on mount
-  useEffect(() => {
-     const loadUser = async () => {
+  const API_URL = process.env.REACT_APP_API_URL;
+
+  // Helper to get token and set headers
+  const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-    
-    if (token) {
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+  // Load user from localStorage and verify token
+  useEffect(() => {
+    const loadUser = async () => {
+      const token = localStorage.getItem('token');
+      const savedUser = localStorage.getItem('user');
       let parsedUser = null;
-      try {
-        parsedUser = savedUser ? JSON.parse(savedUser) : null;
-      } catch (err) {
-        console.warn('Saved user corrupted, clearing...', err);
-        localStorage.removeItem('user');
+
+      if (savedUser) {
+        try {
+          parsedUser = JSON.parse(savedUser);
+        } catch (err) {
+          console.warn('Saved user corrupted, clearing...', err);
+          localStorage.removeItem('user');
+        }
       }
 
       setUser(parsedUser);
 
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setUser(response.data.data);
-        localStorage.setItem('user', JSON.stringify(response.data.data));
-      } catch (err) {
-        console.error('Token verification failed:', err);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setUser(null);
+      if (token) {
+        try {
+          const response = await axios.get(`${API_URL}/users/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setUser(response.data.data);
+          localStorage.setItem('user', JSON.stringify(response.data.data));
+        } catch (err) {
+          console.error('Token verification failed:', err);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
+        }
       }
+      setLoading(false);
+    };
+
+    loadUser();
+  }, [API_URL]);
+
+  // Generic request wrapper for protected routes
+  const protectedRequest = async (method, url, data) => {
+    try {
+      const response = await axios({ method, url: `${API_URL}${url}`, data, headers: getAuthHeaders() });
+      return response.data;
+    } catch (err) {
+      const message = err.response?.data?.message || err.message || 'Request failed';
+      throw new Error(message);
     }
-    setLoading(false);
   };
 
-  loadUser();
-  }, []);
-
-  // Register
+  // Auth actions
   const register = async (userData) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/register`, userData);
-      
+      const response = await axios.post(`${API_URL}/auth/register`, userData);
       const { token, user } = response.data;
-      
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
       setUser(user);
-      
       return { success: true, user };
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Registration failed';
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
+      const msg = err.response?.data?.message || 'Registration failed';
+      setError(msg);
+      return { success: false, error: msg };
     } finally {
       setLoading(false);
     }
   };
 
-  // Login
   const login = async (email, password) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, { email, password });
-
-      
+      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
       const { token, user } = response.data;
-      
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
       setUser(user);
-      
       return { success: true, user };
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Login failed';
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
+      const msg = err.response?.data?.message || 'Login failed';
+      setError(msg);
+      return { success: false, error: msg };
     } finally {
       setLoading(false);
     }
   };
 
-  // Logout
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
     setError(null);
   };
-  
 
-  // Update user profile
   const updateUser = async (updates) => {
     try {
       setLoading(true);
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}/users/me`, {updates});
-      const updatedUser = response.data.data;
-      
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      
-      return { success: true, user: updatedUser };
+      const data = await protectedRequest('put', '/users/me', { updates });
+      setUser(data.data);
+      localStorage.setItem('user', JSON.stringify(data.data));
+      return { success: true, user: data.data };
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Update failed';
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
+      setError(err.message);
+      return { success: false, error: err.message };
     } finally {
       setLoading(false);
     }
   };
 
-  // Verify email
   const verifyEmail = async (token) => {
     try {
       setLoading(true);
-      await axios.post(`${process.env.REACT_APP_API_URL}/auth/verify-email`, { token });
-      
-      // Refresh user data
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/me`);
-      const updatedUser = response.data.data;
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      
+      await protectedRequest('post', '/auth/verify-email', { token });
+      const updated = await protectedRequest('get', '/users/me');
+      setUser(updated.data);
+      localStorage.setItem('user', JSON.stringify(updated.data));
       return { success: true };
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Verification failed';
-      return { success: false, error: errorMessage };
+      return { success: false, error: err.message };
     } finally {
       setLoading(false);
     }
   };
 
-  // Verify phone
   const verifyPhone = async (code) => {
     try {
       setLoading(true);
-      await axios.post(`${process.env.REACT_APP_API_URL}/auth/verify-phone`, { userId: user.id, code });
-      
-      // Refresh user data
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/me`);
-      const updatedUser = response.data.data;
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      
+      await protectedRequest('post', '/auth/verify-phone', { userId: user?.id, code });
+      const updated = await protectedRequest('get', '/users/me');
+      setUser(updated.data);
+      localStorage.setItem('user', JSON.stringify(updated.data));
       return { success: true };
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Verification failed';
-      return { success: false, error: errorMessage };
+      return { success: false, error: err.message };
     } finally {
       setLoading(false);
     }
   };
 
-  // Resend phone verification
   const resendPhoneVerification = async () => {
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/auth/resend-phone-verification`, { userId: user.id });
+      await protectedRequest('post', '/auth/resend-phone-verification', { userId: user?.id });
       return { success: true };
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to resend code';
-      return { success: false, error: errorMessage };
+      return { success: false, error: err.message };
     }
   };
 
-  // Forgot password
   const forgotPassword = async (email) => {
     try {
       setLoading(true);
-      await axios.post(`${process.env.REACT_APP_API_URL}/auth/forgot-password`, { email });
+      await axios.post(`${API_URL}/auth/forgot-password`, { email });
       return { success: true };
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Request failed';
-      return { success: false, error: errorMessage };
+      return { success: false, error: err.response?.data?.message || 'Request failed' };
     } finally {
       setLoading(false);
     }
   };
 
-  // Reset password
   const resetPassword = async (token, newPassword) => {
     try {
       setLoading(true);
-      await axios.post(`${process.env.REACT_APP_API_URL}/auth/reset-password`, { token, newPassword });
+      await axios.post(`${API_URL}/auth/reset-password`, { token, newPassword });
       return { success: true };
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Reset failed';
-      return { success: false, error: errorMessage };
+      return { success: false, error: err.response?.data?.message || 'Reset failed' };
     } finally {
       setLoading(false);
     }
   };
 
-  // Change password
   const changePassword = async (currentPassword, newPassword) => {
     try {
       setLoading(true);
-      await axios.put(`${process.env.REACT_APP_API_URL}/users/change-password`, { currentPassword, newPassword });
+      await protectedRequest('put', '/users/change-password', { currentPassword, newPassword });
       return { success: true };
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Password change failed';
-      return { success: false, error: errorMessage };
+      return { success: false, error: err.message };
     } finally {
       setLoading(false);
     }
@@ -239,11 +222,8 @@ export const AuthProvider = ({ children }) => {
     forgotPassword,
     resetPassword,
     changePassword,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
   };
-  
-  
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
