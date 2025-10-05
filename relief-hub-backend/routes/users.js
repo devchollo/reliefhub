@@ -24,7 +24,7 @@ router.put('/me', protect, async (req, res) => {
 router.get('/dashboard', protect, async (req, res) => {
   try {
     // Fetch user donations
-    const donations = await Donation.find({ user: req.user._id })
+    const donations = await Donation.find({ donor: req.user._id })
       .populate('request', 'name type') // include request details
       .sort({ createdAt: -1 });
 
