@@ -17,7 +17,7 @@ const RequestDetailsModal = ({ request, onClose, onHelp }) => {
 
     try {
       setHelping(true);
-      await axios.post(`/api/requests/${request._id}/help`, { notes });
+      await axios.post(`/requests/${request._id}/help`, { notes });
       alert('Thank you for helping!');
       if (onHelp) onHelp();
       onClose();
