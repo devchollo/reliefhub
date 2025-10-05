@@ -23,7 +23,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 
 // API Configuration
-axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'https://reliefhub-xfru.onrender.com/api';
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 // Add auth token to requests
